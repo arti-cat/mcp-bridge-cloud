@@ -145,12 +145,25 @@ export class CloudConnector {
    */
   forwardToLocalAdapter({ method, url, headers, body }) {
     return new Promise((resolve, reject) => {
+      // Prepare body for sending
+      let bodyStr = null;
+      if (body) {
+        // Convert body to string if it's an object
+        bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+      }
+
+      // Update Content-Length header if we have a body
+      const requestHeaders = { ...headers };
+      if (bodyStr) {
+        requestHeaders['Content-Length'] = Buffer.byteLength(bodyStr);
+      }
+
       const options = {
         hostname: 'localhost',
         port: this.localPort,
         path: url,
         method,
-        headers,
+        headers: requestHeaders,
       };
 
       const req = http.request(options, (res) => {
@@ -173,9 +186,7 @@ export class CloudConnector {
         reject(error);
       });
 
-      if (body) {
-        // Convert body to string if it's an object
-        const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+      if (bodyStr) {
         req.write(bodyStr);
       }
 
