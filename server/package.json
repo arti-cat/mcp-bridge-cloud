@@ -1,0 +1,33 @@
+{
+  "name": "mcp-bridge-cloud-server",
+  "version": "0.1.0",
+  "description": "Tunnel relay server for MCP Bridge Cloud - provides persistent HTTPS tunnels",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "echo \"Tests coming soon\" && exit 0"
+  },
+  "keywords": [
+    "mcp",
+    "tunnel",
+    "websocket",
+    "reverse-proxy",
+    "mcp-bridge"
+  ],
+  "author": "articat <articat1066@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "@fastify/cors": "^10.0.1",
+    "fastify": "^5.0.0",
+    "ws": "^8.16.0",
+    "dotenv": "^16.3.1",
+    "nanoid": "^5.0.4"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.19.0"
+  }
+}

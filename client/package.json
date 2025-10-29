@@ -1,0 +1,21 @@
+{
+  "name": "mcp-bridge-cloud-client",
+  "version": "0.1.0",
+  "description": "WebSocket client for connecting mcp-bridge to cloud tunnel service",
+  "main": "lib/cloud-connector.js",
+  "type": "module",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "mcp",
+    "tunnel",
+    "websocket",
+    "client"
+  ],
+  "author": "articat <articat1066@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}
