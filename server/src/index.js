@@ -48,7 +48,7 @@ app.get('/api/check-subdomain', handleCheckSubdomain);
 app.get('/api/status/:subdomain', tunnelStatus);
 
 // Serve static dashboard files for root domain only
-const dashboardPath = path.join(__dirname, '../../dashboard/dist');
+const dashboardPath = path.join(__dirname, '../dashboard/dist');
 
 // Check if dashboard is built
 const dashboardExists = fs.existsSync(dashboardPath);
