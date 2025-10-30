@@ -8,7 +8,7 @@ import { CloudConnector } from './lib/cloud-connector.js';
 // Configuration
 const config = {
   apiKey: '7b48fd731ad2ef3c74c6ed3807087af15b9363c8cb2799c5e4b6adec33084ba6',  // articat API key
-  tunnelUrl: 'wss://mcp-bridge.xyz',  // Production domain
+  tunnelUrl: 'wss://mcp-bridge-cloud.fly.dev',  // Fly.io direct (for testing)
   localPort: 3000,  // Local adapter port (won't be used for this test)
   debug: true,
 };
