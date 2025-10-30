@@ -102,7 +102,7 @@ export function createTunnelServer(httpServer) {
     ws.send(JSON.stringify({
       type: 'connected',
       subdomain,
-      url: `https://${subdomain}.mcpbridge.io`
+      url: `https://${subdomain}.mcp-bridge.xyz`
     }));
   });
 

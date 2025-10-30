@@ -1,9 +1,14 @@
+# Dev
+dev-docs/
+
+
 # Dependencies
 node_modules/
 package-lock.json
 
 # Environment variables
 .env
+.env.dev
 .env.local
 .env.*.local
 

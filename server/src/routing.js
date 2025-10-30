@@ -19,10 +19,13 @@ export function extractSubdomain(hostname) {
     return process.env.TEST_SUBDOMAIN || null;
   }
 
-  // Extract subdomain from *.mcpbridge.io
+  // Extract subdomain from *.mcp-bridge.xyz
   const parts = hostname.split('.');
-  if (parts.length >= 3 && parts[parts.length - 2] === 'mcpbridge') {
-    return parts[0];
+  if (parts.length >= 3) {
+    // Check for mcp-bridge.xyz (parts: subdomain, mcp-bridge, xyz)
+    if (parts[parts.length - 2] === 'mcp-bridge' && parts[parts.length - 1] === 'xyz') {
+      return parts[0];
+    }
   }
 
   return null;
@@ -48,7 +51,7 @@ export async function routeRequest(req, reply) {
   if (!subdomain) {
     return reply.code(400).send({
       error: 'Invalid subdomain',
-      message: 'Please use format: https://username.mcpbridge.io',
+      message: 'Please use format: https://username.mcp-bridge.xyz',
     });
   }
 
@@ -131,7 +134,7 @@ export async function tunnelStatus(req, reply) {
     subdomain,
     username: user.username,
     status: connected ? 'connected' : 'disconnected',
-    url: `https://${subdomain}.mcpbridge.io`,
+    url: `https://${subdomain}.mcp-bridge.xyz`,
   });
 }
 

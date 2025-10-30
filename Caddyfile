@@ -1,7 +1,7 @@
 # Caddyfile for MCP Bridge Cloud
 # Provides wildcard SSL and reverse proxy to tunnel relay service
 
-*.mcpbridge.io {
+*.mcp-bridge.xyz {
   # Automatic HTTPS with Let's Encrypt (requires DNS challenge for wildcard)
   tls {
     dns cloudflare {env.CLOUDFLARE_API_TOKEN}
@@ -24,7 +24,7 @@
 }
 
 # Main domain (for landing page / dashboard)
-mcpbridge.io {
+mcp-bridge.xyz {
   tls {
     dns cloudflare {env.CLOUDFLARE_API_TOKEN}
   }
