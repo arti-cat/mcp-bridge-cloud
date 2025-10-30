@@ -1,0 +1,50 @@
+# Dockerfile for MCP Bridge Cloud Server with Caddy SSL
+# Use this version after Let's Encrypt rate limit expires (Oct 31, 2025 08:22 UTC)
+# Provides automatic wildcard SSL via Caddy + Cloudflare DNS
+
+# Stage 1: Build custom Caddy with Cloudflare DNS plugin
+FROM caddy:2-builder AS caddy-builder
+RUN xcaddy build \
+    --with github.com/caddy-dns/cloudflare
+
+# Stage 2: Main application image
+FROM node:20-alpine
+
+# Install ca-certificates for SSL/TLS
+RUN apk add --no-cache ca-certificates
+
+# Copy Caddy binary from builder stage
+COPY --from=caddy-builder /usr/bin/caddy /usr/bin/caddy
+
+# Set working directory
+WORKDIR /app
+
+# Install Node.js dependencies first (for caching)
+COPY server/package*.json ./
+RUN npm ci --only=production
+
+# Copy application code
+COPY server/ ./
+
+# Copy Caddy configuration
+COPY Caddyfile /etc/caddy/Caddyfile
+
+# Copy startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Create log directory for Caddy
+RUN mkdir -p /var/log/caddy
+
+# Expose ports:
+# 80  - HTTP (Caddy redirects to HTTPS)
+# 443 - HTTPS (Caddy SSL termination)
+# 8080 - Node.js internal (not exposed externally)
+EXPOSE 80 443 8080
+
+# Health check (checks Node.js internal port)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/healthz', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start both Caddy and Node.js via start script
+CMD ["/start.sh"]

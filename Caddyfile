@@ -2,7 +2,7 @@
 # Provides wildcard SSL and reverse proxy to tunnel relay service
 
 *.mcp-bridge.xyz {
-  # Automatic HTTPS with Let's Encrypt (requires DNS challenge for wildcard)
+  # Automatic HTTPS with Let's Encrypt (production)
   tls {
     dns cloudflare {env.CLOUDFLARE_API_TOKEN}
   }
@@ -14,7 +14,7 @@
   }
 
   # Reverse proxy to tunnel relay service
-  reverse_proxy localhost:8080 {
+  reverse_proxy 127.0.0.1:8080 {
     # Preserve original headers
     header_up Host {host}
     header_up X-Real-IP {remote_host}
@@ -23,15 +23,27 @@
   }
 }
 
-# Main domain (for landing page / dashboard)
+# Main domain (WebSocket tunnel + future dashboard)
 mcp-bridge.xyz {
+  # Automatic HTTPS with Let's Encrypt (production)
   tls {
     dns cloudflare {env.CLOUDFLARE_API_TOKEN}
   }
 
-  # Serve static files or proxy to dashboard
-  # For now, proxy to dashboard on port 3000
-  reverse_proxy localhost:3000
+  # Enable logging
+  log {
+    output file /var/log/caddy/access.log
+    format json
+  }
+
+  # Reverse proxy to tunnel relay service (WebSocket + HTTP)
+  reverse_proxy 127.0.0.1:8080 {
+    # Preserve original headers
+    header_up Host {host}
+    header_up X-Real-IP {remote_host}
+    header_up X-Forwarded-For {remote_host}
+    header_up X-Forwarded-Proto {scheme}
+  }
 }
 
 # Health check endpoint (direct access, no SSL needed)
