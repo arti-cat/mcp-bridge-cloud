@@ -70,10 +70,12 @@ Self-service user management via web UI at `https://mcp-bridge.xyz/dashboard`
 
 ### Completion Summary
 - **Completion Date**: October 30, 2025
+- **Deployment Status**: ✅ LIVE at https://mcp-bridge.xyz
 - **Tech Stack**: Svelte 4 + Vite, Supabase Auth, Fastify static serving
 - **Files Created**: 15+ new files in `dashboard/` directory
 - **API Endpoints**: 5 new REST endpoints
 - **Build System**: Multi-stage Docker build with dashboard compilation
+- **Docker Image Size**: 53 MB (optimized with multi-stage build)
 
 ### What Was Built
 
@@ -134,14 +136,22 @@ GET    /api/metrics               # Get usage metrics
 
 **Static File Serving** (configured in `server/src/index.js`):
 ```javascript
-// Serve dashboard
-app.register(fastifyStatic, {
-  root: path.join(__dirname, '../../dashboard/dist'),
-  prefix: '/',
-});
+// Serve dashboard (only on root domain, not subdomains)
+const dashboardPath = path.join(__dirname, '../dashboard/dist');
+if (fs.existsSync(dashboardPath)) {
+  app.register(fastifyStatic, {
+    root: dashboardPath,
+    prefix: '/',
+    constraints: {
+      host: /^(mcp-bridge\.xyz|localhost|127\.0\.0\.1)$/
+    }
+  });
+}
 ```
 
 **Database Schema**: Existing schema was sufficient, no migrations required.
+
+**Deployment Issue Fixed**: Initial deployment had incorrect dashboard path (`../../dashboard/dist` instead of `../dashboard/dist`). Corrected in [server/src/index.js:51](server/src/index.js#L51) to properly resolve to `/app/dashboard/dist` in Docker container.
 
 #### 2.4 Deployment
 
