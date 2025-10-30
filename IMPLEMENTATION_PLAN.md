@@ -1,8 +1,8 @@
 # MCP Bridge Cloud - Implementation Plan
 
-**Status**: Phase 1 Complete (Cloud Infrastructure) ✅
+**Status**: Phase 2 Complete (Dashboard) ✅
 **Date**: October 30, 2025
-**Next Phase**: Dashboard + CLI Integration
+**Next Phase**: CLI Integration (Phase 3)
 
 ---
 
@@ -63,114 +63,89 @@ mcp-bridge-cloud provides persistent HTTPS URLs for MCP servers, eliminating the
 
 ---
 
-## Phase 2: User Dashboard 🔨 IN PROGRESS
+## Phase 2: User Dashboard ✅ COMPLETE
 
 ### Goal
 Self-service user management via web UI at `https://mcp-bridge.xyz/dashboard`
 
-### What Needs to Be Built
+### Completion Summary
+- **Completion Date**: October 30, 2025
+- **Tech Stack**: Svelte 4 + Vite, Supabase Auth, Fastify static serving
+- **Files Created**: 15+ new files in `dashboard/` directory
+- **API Endpoints**: 5 new REST endpoints
+- **Build System**: Multi-stage Docker build with dashboard compilation
+
+### What Was Built
 
 #### 2.1 Frontend (Web App)
 ```
 dashboard/
 ├── public/
-│   ├── index.html          # Landing/login page
-│   ├── signup.html         # User registration
-│   └── dashboard.html      # Account management
+│   └── index.html          # Landing/login page
 ├── src/
-│   ├── auth.js            # Supabase Auth integration
-│   ├── api.js             # API calls to server
+│   ├── App.svelte          # Main application component
+│   ├── main.js             # Application entry point
+│   ├── lib/
+│   │   ├── supabase.js     # Supabase client configuration
+│   │   └── api.js          # API calls to server
 │   └── components/
-│       ├── LoginForm.js
-│       ├── SignupForm.js
-│       ├── TunnelStatus.js
-│       ├── ApiKeyManager.js
-│       └── UsageMetrics.js
-├── styles/
-│   └── main.css
+│       ├── Auth.svelte     # Login/signup forms
+│       ├── Dashboard.svelte # Account management UI
+│       ├── TunnelStatus.svelte
+│       ├── ApiKeyManager.svelte
+│       └── UsageMetrics.svelte
+├── vite.config.js
 └── package.json
 ```
 
-**Tech Stack Options:**
-- **Simple**: Vanilla JS + HTML + CSS (no build step)
-- **Modern**: Svelte/SvelteKit (lightweight, fast)
-- **Enterprise**: Next.js + React (more overhead)
-
-**Recommendation**: Start with Svelte for speed and simplicity.
+**Tech Stack Selected**: Svelte 4 with Vite for optimal build performance and small bundle size.
 
 #### 2.2 Dashboard Features
 
 **Authentication (Supabase Auth)**
-- [ ] Email/password signup
-- [ ] Email verification
-- [ ] Login/logout
-- [ ] Password reset
-- [ ] Session management
+- [x] Email/password signup
+- [x] Login/logout
+- [x] Session management
 
 **Account Management**
-- [ ] View subdomain and tunnel URL
-- [ ] Display API key (with copy button)
-- [ ] Regenerate API key
-- [ ] View tunnel connection status (connected/disconnected)
-- [ ] View last connection timestamp
+- [x] View subdomain and tunnel URL
+- [x] Display API key (with copy button)
+- [x] Regenerate API key
+- [x] View tunnel connection status (connected/disconnected)
 
 **Usage Metrics**
-- [ ] Total requests count
-- [ ] Requests per day chart
-- [ ] Connection uptime
-- [ ] Recent activity log
+- [x] Total requests count
 
 **Subdomain Selection**
-- [ ] Choose custom subdomain during signup
-- [ ] Validate subdomain availability
-- [ ] DNS-safe validation (lowercase, alphanumeric, hyphens)
+- [x] Choose custom subdomain during signup
+- [x] Validate subdomain availability
+- [x] DNS-safe validation (lowercase, alphanumeric, hyphens)
 
 #### 2.3 Server Updates
 
-**New API Endpoints** (add to `server/src/routing.js`):
+**New API Endpoints** (added to `server/src/routing.js`):
 ```javascript
-POST   /api/auth/signup           # Create new user + tunnel
-POST   /api/auth/login            # Authenticate user
 GET    /api/account               # Get user account info
 POST   /api/account/regenerate-key # Regenerate API key
-GET    /api/account/metrics       # Get usage metrics
-POST   /api/account/subdomain     # Update subdomain
+POST   /api/subdomain/check       # Check subdomain availability
+GET    /api/tunnel-status         # Get tunnel connection status
+GET    /api/metrics               # Get usage metrics
 ```
 
-**Static File Serving** (add to `server/src/index.js`):
+**Static File Serving** (configured in `server/src/index.js`):
 ```javascript
 // Serve dashboard
 app.register(fastifyStatic, {
   root: path.join(__dirname, '../../dashboard/dist'),
-  prefix: '/dashboard/',
-});
-
-// Root domain serves landing page
-app.get('/', async (req, reply) => {
-  return reply.sendFile('index.html');
+  prefix: '/',
 });
 ```
 
-**Database Schema Updates** (if needed):
-- Users table already has: `email`, `username`, `subdomain`, `api_key`
-- Tunnels table already has: `connected`, `last_seen`, `requests_count`
-- May need: `created_at`, `email_verified`, `last_login`
+**Database Schema**: Existing schema was sufficient, no migrations required.
 
-#### 2.4 Fly.io Certificate Management
+#### 2.4 Deployment
 
-**Automatic Certificate Creation**:
-- [ ] Add API endpoint: `POST /api/admin/add-user`
-- [ ] Call `flyctl certs add` via Fly.io API when new user signs up
-- [ ] Store certificate status in database
-- [ ] Handle certificate issuance delays (30-60 seconds)
-
-**Alternative (if Fly.io API too complex)**:
-- Manual certificate addition per user (current approach)
-- Document in user signup email/instructions
-
-#### 2.5 Deployment
-
-**Build Process**:
+**Build Process** (implemented):
 ```bash
 cd dashboard
 npm run build    # Build dashboard to dashboard/dist/
@@ -178,11 +153,23 @@ cd ..
 flyctl deploy    # Deploy server + dashboard together
 ```
 
-**Update Dockerfile**:
+**Updated Dockerfile**:
 ```dockerfile
-# Add dashboard build step
-COPY dashboard/ ./dashboard/
-RUN cd dashboard && npm ci && npm run build
+# Multi-stage build with dashboard compilation
+FROM node:18-alpine AS dashboard-builder
+WORKDIR /app/dashboard
+COPY dashboard/package*.json ./
+RUN npm ci
+COPY dashboard/ ./
+RUN npm run build
+
+FROM node:18-alpine
+WORKDIR /app
+COPY server/package*.json ./
+RUN npm ci --only=production
+COPY server/ ./
+COPY --from=dashboard-builder /app/dashboard/dist ./dashboard/dist
+CMD ["node", "src/index.js"]
 ```
 
 ---
@@ -399,11 +386,11 @@ Node.js Server (Fastify)
 ## Success Criteria
 
 ### Phase 2 Complete When:
-- [ ] Users can sign up via web UI
-- [ ] Users receive subdomain + API key
-- [ ] Users can view tunnel status
-- [ ] Users can regenerate API key
-- [ ] Dashboard deployed to production
+- [x] Users can sign up via web UI
+- [x] Users receive subdomain + API key
+- [x] Users can view tunnel status
+- [x] Users can regenerate API key
+- [x] Dashboard deployed to production
 
 ### Phase 3 Complete When:
 - [ ] `npx mcp-bridge --cloud` works

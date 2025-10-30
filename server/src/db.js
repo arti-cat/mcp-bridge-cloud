@@ -49,11 +49,27 @@ export async function getUserBySubdomain(subdomain) {
   return data;
 }
 
-export async function createUser({ email, username, subdomain, apiKey }) {
+export async function getUserById(userId) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching user by ID:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function createUser({ id, email, username, subdomain, apiKey }) {
   const { data, error } = await supabase
     .from('users')
     .insert([
       {
+        id, // Use Supabase auth user ID
         email,
         username,
         subdomain,
@@ -65,6 +81,22 @@ export async function createUser({ email, username, subdomain, apiKey }) {
 
   if (error) {
     console.error('Error creating user:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+export async function regenerateApiKey(userId, newApiKey) {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ api_key: newApiKey, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error regenerating API key:', error);
     throw error;
   }
 
@@ -173,7 +205,9 @@ export default {
   supabase,
   getUserByApiKey,
   getUserBySubdomain,
+  getUserById,
   createUser,
+  regenerateApiKey,
   updateTunnelStatus,
   incrementRequestCount,
   getTunnelStats,

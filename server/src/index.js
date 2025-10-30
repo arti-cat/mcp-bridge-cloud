@@ -8,8 +8,22 @@
 
 import 'dotenv/config';
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { createTunnelServer } from './tunnel-relay.js';
 import { routeRequest, healthCheck, tunnelStatus } from './routing.js';
+import {
+  handleSignup,
+  handleGetAccount,
+  handleRegenerateKey,
+  handleGetMetrics,
+  handleCheckSubdomain,
+} from './api-routes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -23,10 +37,48 @@ const app = Fastify({
 // Health check endpoint
 app.get('/healthz', healthCheck);
 
+// Dashboard API endpoints
+app.post('/api/auth/signup', handleSignup);
+app.get('/api/account', handleGetAccount);
+app.post('/api/account/regenerate-key', handleRegenerateKey);
+app.get('/api/account/metrics', handleGetMetrics);
+app.get('/api/check-subdomain', handleCheckSubdomain);
+
 // Tunnel status endpoint
 app.get('/api/status/:subdomain', tunnelStatus);
 
+// Serve static dashboard files for root domain only
+const dashboardPath = path.join(__dirname, '../../dashboard/dist');
+
+// Check if dashboard is built
+const dashboardExists = fs.existsSync(dashboardPath);
+if (dashboardExists) {
+  app.register(fastifyStatic, {
+    root: dashboardPath,
+    prefix: '/',
+    constraints: {
+      host: /^(mcp-bridge\.xyz|localhost|127\.0\.0\.1)$/ // Only serve on root domain
+    }
+  });
+  console.log('✓ Dashboard static files registered from:', dashboardPath);
+} else {
+  console.warn('⚠ Dashboard not built yet. Run: cd dashboard && npm install && npm run build');
+
+  // Serve a simple message on root domain when dashboard not built
+  app.get('/', async (req, reply) => {
+    return reply.type('text/html').send(`
+      <html>
+        <body>
+          <h1>MCP Bridge Cloud</h1>
+          <p>Dashboard not built yet. Run: <code>cd dashboard && npm install && npm run build</code></p>
+        </body>
+      </html>
+    `);
+  });
+}
+
 // Main routing endpoint (handles all subdomain traffic)
+// Note: This catches requests that don't match the static file constraints
 app.all('/*', routeRequest);
 
 // Start server
