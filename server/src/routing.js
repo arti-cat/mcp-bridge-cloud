@@ -10,7 +10,7 @@ import { forwardHttpRequest, isConnected } from './tunnel-relay.js';
 /**
  * Extract subdomain from hostname
  * Examples:
- *   username.mcpbridge.io → username
+ *   username.mcp-bridge.xyz → username
  *   localhost → null (for testing)
  */
 export function extractSubdomain(hostname) {
