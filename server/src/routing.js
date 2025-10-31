@@ -5,7 +5,7 @@
  */
 
 import { getUserBySubdomain, incrementRequestCount } from './db.js';
-import { forwardHttpRequest, isConnected } from './tunnel-relay.js';
+import { forwardHttpRequest, isConnected, getSessionId } from './tunnel-relay.js';
 
 /**
  * Extract subdomain from hostname
@@ -19,12 +19,28 @@ export function extractSubdomain(hostname) {
     return process.env.TEST_SUBDOMAIN || null;
   }
 
-  // Extract subdomain from *.mcp-bridge.xyz
+  // Extract subdomain from hostname
   const parts = hostname.split('.');
   if (parts.length >= 3) {
     // Check for mcp-bridge.xyz (parts: subdomain, mcp-bridge, xyz)
     if (parts[parts.length - 2] === 'mcp-bridge' && parts[parts.length - 1] === 'xyz') {
       return parts[0];
+    }
+    // Check for fly.dev (username-mcp-bridge-cloud.fly.dev format)
+    if (parts[parts.length - 2] === 'fly' && parts[parts.length - 1] === 'dev') {
+      // For username-mcp-bridge-cloud.fly.dev format
+      if (parts.length === 3) {
+        const appName = parts[0]; // e.g., "articat-mcp-bridge-cloud"
+        // Extract username from "username-mcp-bridge-cloud"
+        const match = appName.match(/^(.+)-mcp-bridge-cloud$/);
+        if (match) {
+          return match[1]; // Returns "articat"
+        }
+        // Fallback for base mcp-bridge-cloud.fly.dev
+        if (appName === 'mcp-bridge-cloud') {
+          return process.env.DEFAULT_SUBDOMAIN || 'articat';
+        }
+      }
     }
   }
 
@@ -73,11 +89,27 @@ export async function routeRequest(req, reply) {
   }
 
   try {
+    // Filter dangerous headers that shouldn't be forwarded
+    const filteredHeaders = {};
+    const dangerousHeaders = new Set([
+      'host', 'connection', 'transfer-encoding', 'content-length',
+      'keep-alive', 'proxy-connection', 'upgrade', 'http2-settings'
+    ]);
+
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (!dangerousHeaders.has(key.toLowerCase())) {
+        filteredHeaders[key] = value;
+      }
+    }
+
+    // Add correct Host header for local adapter
+    filteredHeaders.host = 'localhost:3000';
+
     // Forward request through tunnel
     const response = await forwardHttpRequest(subdomain, {
       method: req.method,
       url: req.url,
-      headers: req.headers,
+      headers: filteredHeaders,
       body: req.body,
     });
 
@@ -86,10 +118,28 @@ export async function routeRequest(req, reply) {
       console.error('Error incrementing request count:', err);
     });
 
+    // Filter response headers - remove hop-by-hop headers
+    const responseHeaders = {};
+    if (response.headers) {
+      for (const [key, value] of Object.entries(response.headers)) {
+        if (!dangerousHeaders.has(key.toLowerCase())) {
+          responseHeaders[key] = value;
+        }
+      }
+    }
+
+    // Add MCP session ID header (required by ChatGPT)
+    const sessionId = getSessionId(subdomain);
+    if (sessionId) {
+      responseHeaders['Mcp-Session-Id'] = sessionId;
+      // CORS: expose the session header to browser clients
+      responseHeaders['Access-Control-Expose-Headers'] = 'Mcp-Session-Id';
+    }
+
     // Send response back to ChatGPT
     reply
       .code(response.statusCode || 200)
-      .headers(response.headers || {})
+      .headers(responseHeaders)
       .send(response.body);
 
   } catch (error) {

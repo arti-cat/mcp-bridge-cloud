@@ -50,6 +50,9 @@ npm run dev
 
 # Production mode
 npm start
+
+# Run MCP Inspector (for testing/debugging MCP servers)
+npm run inspector
 ```
 
 ### Client Testing

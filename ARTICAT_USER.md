@@ -8,7 +8,8 @@
 Email:     articat-1066@gmail.com
 Username:  articat
 Subdomain: articat
-API Key:   7b48fd731ad2ef3c74c6ed3807087af15b9363c8cb2799c5e4b6adec33084ba6
+API Key:   dfcdc844ef1f140aa0f5fe095b3202e76125702cbe14004e125bc310433f1bd6
+
 ```
 
 ## Your Persistent Tunnel URL
@@ -37,10 +38,10 @@ Once the mcp-bridge CLI is updated with cloud connector support:
 
 ```bash
 # Connect to cloud tunnel (instead of Cloudflare)
-mcp-bridge --cloud --api-key 7b48fd731ad2ef3c74c6ed3807087af15b9363c8cb2799c5e4b6adec33084ba6
+mcp-bridge --cloud --api-key dfcdc844ef1f140aa0f5fe095b3202e76125702cbe14004e125bc310433f1bd6
 
 # Or set environment variable
-export MCP_BRIDGE_API_KEY=7b48fd731ad2ef3c74c6ed3807087af15b9363c8cb2799c5e4b6adec33084ba6
+export MCP_BRIDGE_API_KEY=dfcdc844ef1f140aa0f5fe095b3202e76125702cbe14004e125bc310433f1bd6
 mcp-bridge --cloud
 ```
 

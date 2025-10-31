@@ -6,10 +6,14 @@
  */
 
 import { WebSocketServer } from 'ws';
+import { randomUUID } from 'crypto';
 import { getUserByApiKey, updateTunnelStatus } from './db.js';
 
 // Active connections: subdomain → WebSocket connection
 const activeConnections = new Map();
+
+// Session IDs: subdomain → sessionId (persists across tunnel lifetime)
+const sessionIds = new Map();
 
 // Pending HTTP requests: requestId → { resolve, reject, timeout }
 const pendingRequests = new Map();
@@ -58,6 +62,12 @@ export function createTunnelServer(httpServer) {
     ws.subdomain = subdomain;
     ws.userId = user.id;
     ws.isAlive = true;
+
+    // Generate session ID if not exists (persists across reconnections)
+    if (!sessionIds.has(subdomain)) {
+      sessionIds.set(subdomain, randomUUID());
+      console.log(`Generated session ID for ${subdomain}: ${sessionIds.get(subdomain)}`);
+    }
 
     // Update tunnel status in database
     await updateTunnelStatus(user.id, subdomain, 'connected');
@@ -211,9 +221,17 @@ export function getActiveConnections() {
   return Array.from(activeConnections.keys());
 }
 
+/**
+ * Get session ID for a subdomain
+ */
+export function getSessionId(subdomain) {
+  return sessionIds.get(subdomain) || null;
+}
+
 export default {
   createTunnelServer,
   forwardHttpRequest,
   isConnected,
   getActiveConnections,
+  getSessionId,
 };

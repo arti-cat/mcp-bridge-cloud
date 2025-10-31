@@ -145,17 +145,22 @@ export class CloudConnector {
    */
   forwardToLocalAdapter({ method, url, headers, body }) {
     return new Promise((resolve, reject) => {
-      // Prepare body for sending
+      // FIX Bug #2: Always convert body to string consistently
       let bodyStr = null;
-      if (body) {
-        // Convert body to string if it's an object
+      if (body !== null && body !== undefined) {
+        // If body is already a string, use it as-is
+        // If body is an object, stringify it
+        // This ensures consistent handling regardless of how Fastify parsed it
         bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
       }
 
       // Update Content-Length header if we have a body
       const requestHeaders = { ...headers };
       if (bodyStr) {
-        requestHeaders['Content-Length'] = Buffer.byteLength(bodyStr);
+        requestHeaders['Content-Length'] = Buffer.byteLength(bodyStr, 'utf8');
+      } else {
+        // Remove Content-Length if no body
+        delete requestHeaders['Content-Length'];
       }
 
       const options = {
@@ -167,13 +172,17 @@ export class CloudConnector {
       };
 
       const req = http.request(options, (res) => {
-        let responseBody = '';
+        // FIX Bug #7: Use Buffer.concat instead of string concatenation
+        const chunks = [];
 
         res.on('data', (chunk) => {
-          responseBody += chunk;
+          chunks.push(chunk);
         });
 
         res.on('end', () => {
+          // Concatenate all chunks properly, then convert to string
+          const responseBody = Buffer.concat(chunks).toString('utf8');
+
           resolve({
             statusCode: res.statusCode,
             headers: res.headers,
@@ -187,7 +196,7 @@ export class CloudConnector {
       });
 
       if (bodyStr) {
-        req.write(bodyStr);
+        req.write(bodyStr, 'utf8');
       }
 
       req.end();

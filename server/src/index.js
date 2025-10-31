@@ -34,6 +34,23 @@ const app = Fastify({
   trustProxy: true, // Important for getting real IP behind Caddy
 });
 
+// CRITICAL FIX: Register body parser for JSON requests
+// Without this, req.body is undefined for POST requests from ChatGPT
+app.addContentTypeParser('application/json', { parseAs: 'string' }, function (req, body, done) {
+  try {
+    const json = body.length > 0 ? JSON.parse(body) : {};
+    done(null, json);
+  } catch (err) {
+    err.statusCode = 400;
+    done(err, undefined);
+  }
+});
+
+// Also support plain text bodies (some clients send this)
+app.addContentTypeParser('text/plain', { parseAs: 'string' }, function (req, body, done) {
+  done(null, body);
+});
+
 // Health check endpoint
 app.get('/healthz', healthCheck);
 
