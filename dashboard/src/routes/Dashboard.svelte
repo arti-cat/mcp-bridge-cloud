@@ -22,8 +22,45 @@
         getMetrics(),
       ]);
     } catch (err) {
+      // Check if this is a "user not found" error (first login after email confirmation)
+      if (err.message.includes('User account not found') || err.message.includes('User not found')) {
+        await handleFirstLogin();
+        return;
+      }
       error = err.message;
     } finally {
+      loading = false;
+    }
+  }
+
+  async function handleFirstLogin() {
+    try {
+      // Get user metadata from Supabase auth
+      const { supabase } = await import('../lib/supabaseClient.js');
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user?.user_metadata) {
+        error = 'Unable to complete account setup. Please sign up again.';
+        loading = false;
+        return;
+      }
+
+      const { username, subdomain } = user.user_metadata;
+
+      if (!username || !subdomain) {
+        error = 'Account setup incomplete. Please contact support.';
+        loading = false;
+        return;
+      }
+
+      // Complete account creation
+      const { createUserAccount } = await import('../lib/api.js');
+      await createUserAccount(username, subdomain);
+
+      // Retry loading dashboard data
+      await loadData();
+    } catch (err) {
+      error = `Failed to complete account setup: ${err.message}`;
       loading = false;
     }
   }

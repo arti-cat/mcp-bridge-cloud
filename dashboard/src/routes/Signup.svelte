@@ -13,6 +13,7 @@
   let loading = false;
   let checkingSubdomain = false;
   let subdomainAvailable = null;
+  let emailConfirmationRequired = false;
 
   // Auto-fill subdomain from username
   $: if (username && !subdomain) {
@@ -65,6 +66,14 @@
 
       if (authError) throw authError;
 
+      // Check if we have a session
+      if (!authData?.session?.access_token) {
+        // No session means email confirmation is required
+        emailConfirmationRequired = true;
+        loading = false;
+        return;
+      }
+
       // Step 2: Create user account in our database
       await createUserAccount(username, subdomain);
 
@@ -81,11 +90,21 @@
     <h1>MCP Bridge Cloud</h1>
     <p class="subtitle">Create your account</p>
 
-    {#if error}
-      <div class="alert error">{error}</div>
-    {/if}
+    {#if emailConfirmationRequired}
+      <div class="alert info">
+        <h3>Check your email!</h3>
+        <p>We've sent a confirmation link to <strong>{email}</strong></p>
+        <p>Click the link in the email to complete your signup, then return here to sign in.</p>
+      </div>
+      <button class="secondary full-width" on:click={() => dispatch('navigate')}>
+        Go to Sign In
+      </button>
+    {:else}
+      {#if error}
+        <div class="alert error">{error}</div>
+      {/if}
 
-    <form on:submit|preventDefault={handleSubmit}>
+      <form on:submit|preventDefault={handleSubmit}>
       <div class="form-group">
         <label for="email">Email</label>
         <input
@@ -151,15 +170,16 @@
         <p class="hint">Minimum 8 characters</p>
       </div>
 
-      <button type="submit" class="full-width" disabled={loading || subdomainAvailable === false}>
-        {loading ? 'Creating account...' : 'Sign Up'}
-      </button>
-    </form>
+        <button type="submit" class="full-width" disabled={loading || subdomainAvailable === false}>
+          {loading ? 'Creating account...' : 'Sign Up'}
+        </button>
+      </form>
 
-    <p class="switch-auth">
-      Already have an account?
-      <button class="link" on:click={() => dispatch('navigate')}>Sign in</button>
-    </p>
+      <p class="switch-auth">
+        Already have an account?
+        <button class="link" on:click={() => dispatch('navigate')}>Sign in</button>
+      </p>
+    {/if}
   </div>
 </div>
 

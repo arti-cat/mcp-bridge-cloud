@@ -8,7 +8,7 @@ Complete guide to deploying your own persistent tunnel service.
 
 - Node.js 18+
 - Supabase account (free tier works)
-- Domain name (e.g., `mcpbridge.io`)
+- Domain name (e.g., `mcp-bridge.xyz`)
 - Cloudflare account (for DNS)
 - Fly.io account (for hosting) OR your own VPS
 
@@ -100,7 +100,7 @@ VALUES (
 
 ### 2.1 Purchase Domain
 
-Buy a domain (e.g., `mcpbridge.io`) from:
+Buy a domain (e.g., `mcp-bridge.xyz`) from:
 - Namecheap (~$12/year)
 - Google Domains
 - Cloudflare Registrar
@@ -185,7 +185,7 @@ IPv6: 2a09:8280:1::XXXX
 
 1. Go to Cloudflare DNS settings
 2. Add A record:
-   - **Name**: `@` (for `mcpbridge.io`)
+   - **Name**: `@` (for `mcp-bridge.xyz`)
    - **IPv4**: Your Fly.io IPv4
    - **Proxy**: OFF (important!)
 
@@ -248,7 +248,7 @@ sudo caddy run --config /etc/caddy/Caddyfile
 ### 5.1 Check Server is Running
 
 ```bash
-curl https://mcpbridge.io/healthz
+curl https://mcp-bridge.xyz/healthz
 # Should return: {"status":"ok",...}
 ```
 
@@ -263,7 +263,7 @@ node -e "
 const CloudConnector = require('./lib/cloud-connector.js');
 const client = new CloudConnector({
   apiKey: 'test_api_key_123',
-  tunnelUrl: 'wss://mcpbridge.io',
+  tunnelUrl: 'wss://mcp-bridge.xyz',
   localPort: 3000,
   debug: true
 });
@@ -285,13 +285,13 @@ mcp-bridge --cloud --api-key test_api_key_123
 
 # You should see:
 # ✓ Connected to cloud
-# Your persistent URL: https://testuser.mcpbridge.io
+# Your persistent URL: https://testuser.mcp-bridge.xyz
 ```
 
 ### 5.4 Test with ChatGPT
 
 1. Go to ChatGPT Developer Mode
-2. Add MCP Server: `https://testuser.mcpbridge.io`
+2. Add MCP Server: `https://testuser.mcp-bridge.xyz`
 3. Try a command: "List files in the current directory"
 4. Should work!
 
@@ -332,7 +332,7 @@ flyctl logs
 ### 7.2 Check Active Connections
 
 ```bash
-curl https://mcpbridge.io/api/status/testuser
+curl https://mcp-bridge.xyz/api/status/testuser
 ```
 
 ### 7.3 Supabase Dashboard
@@ -365,7 +365,7 @@ Monitor database:
 **Solution:**
 - Check Fly.io is running: `flyctl status`
 - Verify firewall allows WebSocket connections
-- Test with: `curl https://mcpbridge.io/healthz`
+- Test with: `curl https://mcp-bridge.xyz/healthz`
 
 ---
 

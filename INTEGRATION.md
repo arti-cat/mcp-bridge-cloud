@@ -16,7 +16,7 @@ mcp-bridge
 
 # After (persistent tunnel):
 mcp-bridge --cloud --api-key sk_xxxxx
-# → https://username.mcpbridge.io (same URL forever)
+# → https://username.mcp-bridge.xyz (same URL forever)
 ```
 
 ---
@@ -57,7 +57,7 @@ function parseArgs() {
     // ... existing config
     cloud: false,
     apiKey: process.env.MCP_CLOUD_API_KEY || null,
-    cloudUrl: process.env.MCP_CLOUD_URL || 'wss://mcpbridge.io',
+    cloudUrl: process.env.MCP_CLOUD_URL || 'wss://mcp-bridge.xyz',
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -169,7 +169,7 @@ async function startCloudTunnel(config) {
     log(`✗ Cloud connection failed: ${error.message}`, colors.red);
     log('\nTroubleshooting:', colors.yellow);
     log('  • Verify your API key is correct', colors.yellow);
-    log('  • Check cloud service is running: curl https://mcpbridge.io/healthz', colors.yellow);
+    log('  • Check cloud service is running: curl https://mcp-bridge.xyz/healthz', colors.yellow);
     log('  • Try temporary tunnel instead: remove --cloud flag', colors.yellow);
     throw error;
   }
@@ -285,7 +285,7 @@ function showHelp() {
   log('  ☁️  Cloud Mode (Persistent Tunnels):', colors.bright);
   log('  --cloud                    Use cloud tunnel service (persistent URL)');
   log('  --api-key <key>            API key for cloud service');
-  log('  --cloud-url <url>          Cloud service URL (default: wss://mcpbridge.io)');
+  log('  --cloud-url <url>          Cloud service URL (default: wss://mcp-bridge.xyz)');
   log('');
   log('  --list-presets             Show all available presets');
   log('  -h, --help                 Show this help\n');
@@ -328,14 +328,14 @@ Get a permanent HTTPS URL that never changes:
 ### Quick Start
 
 \`\`\`bash
-# Sign up at mcpbridge.io to get API key
+# Sign up at mcp-bridge.xyz to get API key
 npx mcp-bridge --cloud --api-key sk_xxxxxxxxxxxxx
 \`\`\`
 
 **Output:**
 \`\`\`
 ✓ Connected to cloud
-Your persistent URL: https://username.mcpbridge.io
+Your persistent URL: https://username.mcp-bridge.xyz
 
 This URL is PERMANENT! ✨
 Add it once to ChatGPT, works forever.
@@ -354,14 +354,14 @@ Add it once to ChatGPT, works forever.
 - **Starter**: $9/mo - 1 tunnel, 10K requests/month
 - **Pro**: $19/mo - 3 tunnels, 100K requests/month
 
-[Sign up at mcpbridge.io](https://mcpbridge.io)
+[Sign up at mcp-bridge.xyz](https://mcp-bridge.xyz)
 
 ### Environment Variables
 
 \`\`\`bash
 # Set once, use anywhere
 export MCP_CLOUD_API_KEY=sk_xxxxxxxxxxxxx
-export MCP_CLOUD_URL=wss://mcpbridge.io  # optional
+export MCP_CLOUD_URL=wss://mcp-bridge.xyz  # optional
 
 # Then just run:
 mcp-bridge --cloud

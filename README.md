@@ -2,7 +2,7 @@
 
 **Persistent HTTPS tunnels for MCP Bridge users.**
 
-Users get a permanent URL like `https://username.mcpbridge.io` that routes to their local MCP adapter.
+Users get a permanent URL like `https://username.mcp-bridge.xyz` that routes to their local MCP adapter.
 
 ---
 
@@ -12,7 +12,7 @@ Users get a permanent URL like `https://username.mcpbridge.io` that routes to th
 User's Local Machine                 Cloud Service (Fly.io)
 ┌─────────────────────┐              ┌──────────────────────────┐
 │ MCP Server (STDIO)  │              │  Caddy (Reverse Proxy)   │
-│        ↓            │              │  *.mcpbridge.io → :8080  │
+│        ↓            │              │  *.mcp-bridge.xyz → :8080  │
 │ lib/server.js       │              │                          │
 │ (HTTP on :3000)     │              │  ┌────────────────────┐  │
 │        ↓            │   WebSocket  │  │ Tunnel Relay       │  │
@@ -21,7 +21,7 @@ User's Local Machine                 Cloud Service (Fly.io)
 └─────────────────────┘              │  │ Routes by subdomain│  │
                                      │  │ username → WS conn │  │
 ChatGPT ─────────────────────────────┼─→│                    │  │
-https://username.mcpbridge.io        │  └────────────────────┘  │
+https://username.mcp-bridge.xyz        │  └────────────────────┘  │
                                      │                          │
                                      │  Supabase (Auth + DB)    │
                                      └──────────────────────────┘
@@ -191,7 +191,7 @@ mcp-bridge --cloud --api-key YOUR_API_KEY
 
 # Output:
 # ✓ Connected to cloud
-# Your persistent URL: https://username.mcpbridge.io
+# Your persistent URL: https://username.mcp-bridge.xyz
 # Add this URL to ChatGPT Developer Mode
 ```
 

@@ -57,7 +57,7 @@ if (dashboardExists) {
     root: dashboardPath,
     prefix: '/',
     constraints: {
-      host: /^(mcp-bridge\.xyz|localhost|127\.0\.0\.1)$/ // Only serve on root domain
+      host: /^(mcp-bridge\.xyz|localhost|127\.0\.0\.1)(:\d+)?$/ // Only serve on root domain (with optional port)
     }
   });
   console.log('✓ Dashboard static files registered from:', dashboardPath);

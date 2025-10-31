@@ -114,7 +114,7 @@ import('ws').then(({ default: WebSocket }) => {
 **Expected output:**
 ```
 ✓ Connected!
-Message: {"type":"connected","subdomain":"testuser","url":"https://testuser.mcpbridge.io"}
+Message: {"type":"connected","subdomain":"testuser","url":"https://testuser.mcp-bridge.xyz"}
 ```
 
 ---
@@ -167,7 +167,7 @@ Open a FOURTH terminal:
 ```bash
 # Simulate ChatGPT request
 curl -X POST http://localhost:8080 \
-  -H "Host: testuser.mcpbridge.io" \
+  -H "Host: testuser.mcp-bridge.xyz" \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -251,7 +251,7 @@ node -e "import('./lib/cloud-connector.js').then(...)"
 cd mcp-bridge && npm start
 
 # Terminal 4: Send requests
-curl -X POST http://localhost:8080 -H "Host: testuser.mcpbridge.io" ...
+curl -X POST http://localhost:8080 -H "Host: testuser.mcp-bridge.xyz" ...
 ```
 
 ---

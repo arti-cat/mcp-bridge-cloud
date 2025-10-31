@@ -68,3 +68,23 @@ export async function signOut() {
 export function onAuthStateChange(callback) {
   return supabase.auth.onAuthStateChange(callback);
 }
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(email) {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/`,
+  });
+  return { data, error };
+}
+
+/**
+ * Update password (called when user has active session from reset link)
+ */
+export async function updatePassword(newPassword) {
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  return { data, error };
+}

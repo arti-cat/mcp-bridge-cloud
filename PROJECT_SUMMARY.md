@@ -8,7 +8,7 @@ A **cloud tunnel service** that provides persistent HTTPS URLs for mcp-bridge us
 Cloudflare temp tunnels change URLs every restart → users must update ChatGPT config constantly.
 
 **Solution:**
-Users get permanent URLs like `https://username.mcpbridge.io` that work forever.
+Users get permanent URLs like `https://username.mcp-bridge.xyz` that work forever.
 
 ---
 
@@ -17,7 +17,7 @@ Users get permanent URLs like `https://username.mcpbridge.io` that work forever.
 ```
 User's Machine (Local)          Cloud Service (Fly.io)
 ┌──────────────────────┐       ┌─────────────────────────┐
-│ MCP Server (STDIO)   │       │ Caddy (*.mcpbridge.io)  │
+│ MCP Server (STDIO)   │       │ Caddy (*.mcp-bridge.xyz)  │
 │         ↓            │       │         ↓                │
 │ mcp-bridge adapter   │       │ Tunnel Relay (Node.js)  │
 │ (HTTP :3000)         │       │   - WebSocket server    │
@@ -27,7 +27,7 @@ User's Machine (Local)          Cloud Service (Fly.io)
 └──────────────────────┘       │ Supabase (DB)           │
                                 │   - Users               │
 ChatGPT ────────────────────────┼──→  - Tunnels          │
-https://username.mcpbridge.io  │   - API keys            │
+https://username.mcp-bridge.xyz  │   - API keys            │
                                 └─────────────────────────┘
 ```
 
@@ -102,19 +102,19 @@ mcp-bridge --cloud --api-key sk_xxxxx --preset filesystem --dir ~/Documents
 ```
 
 ### 3. CloudConnector Connects to Server
-- Opens WebSocket to `wss://mcpbridge.io/tunnel?api_key=sk_xxxxx`
+- Opens WebSocket to `wss://mcp-bridge.xyz/tunnel?api_key=sk_xxxxx`
 - Server validates API key via Supabase
-- Server maps `john.mcpbridge.io` → user's WebSocket connection
+- Server maps `john.mcp-bridge.xyz` → user's WebSocket connection
 
 ### 4. User Gets Persistent URL
 ```
 ✓ Connected to cloud
-Your persistent URL: https://john.mcpbridge.io
+Your persistent URL: https://john.mcp-bridge.xyz
 ```
 
 ### 5. ChatGPT Sends Request
 ```
-ChatGPT → https://john.mcpbridge.io/tools/list
+ChatGPT → https://john.mcp-bridge.xyz/tools/list
          ↓
 Caddy → Tunnel Relay → extracts subdomain "john"
                      → finds WebSocket connection
@@ -169,7 +169,7 @@ CREATE TABLE tunnels (
 3. Copy API keys
 
 ### 2. Domain Setup (10 min)
-1. Buy domain: `mcpbridge.io` (~$12/year)
+1. Buy domain: `mcp-bridge.xyz` (~$12/year)
 2. Add to Cloudflare
 3. Get API token for DNS
 
@@ -182,7 +182,7 @@ flyctl deploy
 ```
 
 ### 4. Configure DNS (5 min)
-- Point `*.mcpbridge.io` → Fly.io IP
+- Point `*.mcp-bridge.xyz` → Fly.io IP
 - Wait for DNS propagation
 
 ### 5. Install Caddy (5 min)
@@ -233,7 +233,7 @@ npm start  # Runs on port 3000
 ### 4. Send Test Request
 ```bash
 curl -X POST http://localhost:8080 \
-  -H "Host: testuser.mcpbridge.io" \
+  -H "Host: testuser.mcp-bridge.xyz" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
@@ -278,7 +278,7 @@ mcp-bridge
 ### User Experience (After)
 ```bash
 mcp-bridge --cloud --api-key sk_xxxxx
-# → https://john.mcpbridge.io
+# → https://john.mcp-bridge.xyz
 # Same URL forever ✅
 ```
 
@@ -323,7 +323,7 @@ mcp-bridge --cloud --api-key sk_xxxxx
 
 ### Week 1 (MVP)
 - [ ] Server deployed to Fly.io
-- [ ] SSL working for `*.mcpbridge.io`
+- [ ] SSL working for `*.mcp-bridge.xyz`
 - [ ] 1 test user connected successfully
 - [ ] ChatGPT can access via persistent URL
 

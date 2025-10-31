@@ -90,7 +90,7 @@ getTunnelStats(userId)           // Get request counts
 **Static File Serving:**
 ```javascript
 app.register(fastifyStatic, {
-  root: path.join(__dirname, '../../dashboard/dist'),
+  root: path.join(__dirname, '../dashboard/dist'),
   prefix: '/',
   constraints: {
     host: /^(mcp-bridge\.xyz|localhost|127\.0\.0\.1)$/

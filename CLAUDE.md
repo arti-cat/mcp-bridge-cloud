@@ -8,7 +8,7 @@ MCP Bridge Cloud is a WebSocket-based tunnel relay service that provides persist
 
 **Core Problem**: Cloudflare temporary tunnels change URLs on every restart, requiring users to constantly update ChatGPT configurations.
 
-**Solution**: Permanent subdomains (e.g., `https://username.mcpbridge.io`) that persist across restarts.
+**Solution**: Permanent subdomains (e.g., `https://username.mcp-bridge.xyz`) that persist across restarts.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ The system has three main components:
 ### Request Flow
 
 ```
-ChatGPT → https://username.mcpbridge.io
+ChatGPT → https://username.mcp-bridge.xyz
     ↓
 Caddy (reverse proxy, wildcard SSL)
     ↓
@@ -101,14 +101,14 @@ For local testing without Supabase, you can mock the database functions in `serv
 ### Configuration
 
 - **`fly.toml`**: Fly.io deployment config (regions, health checks, scaling)
-- **`Caddyfile`**: Reverse proxy config for wildcard SSL (`*.mcpbridge.io`)
+- **`Caddyfile`**: Reverse proxy config for wildcard SSL (`*.mcp-bridge.xyz`)
 - **`Dockerfile`**: Container build for deployment
 - **`docker-compose.yml`**: Local development environment
 
 ## Important Implementation Details
 
 ### Subdomain Extraction
-The system extracts subdomains from the `Host` header (e.g., `username.mcpbridge.io` → `username`). For local testing, set `TEST_SUBDOMAIN` env var or use `Host` header injection.
+The system extracts subdomains from the `Host` header (e.g., `username.mcp-bridge.xyz` → `username`). For local testing, set `TEST_SUBDOMAIN` env var or use `Host` header injection.
 
 ### WebSocket Connection Management
 - **One connection per subdomain**: New connections from same user close existing ones (see `tunnel-relay.js:50-54`)
@@ -154,7 +154,7 @@ The `increment_tunnel_requests` PostgreSQL function atomically increments reques
 5. **Send test request**:
    ```bash
    curl -X POST http://localhost:8080 \
-     -H "Host: testuser.mcpbridge.io" \
+     -H "Host: testuser.mcp-bridge.xyz" \
      -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
    ```
@@ -204,8 +204,8 @@ flyctl status
 
 Point wildcard domain to Fly.io IP:
 ```
-A record:    *.mcpbridge.io → [Fly.io IPv4]
-AAAA record: *.mcpbridge.io → [Fly.io IPv6]
+A record:    *.mcp-bridge.xyz → [Fly.io IPv4]
+AAAA record: *.mcp-bridge.xyz → [Fly.io IPv6]
 ```
 
 Caddy handles automatic SSL via Cloudflare DNS challenge.

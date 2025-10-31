@@ -57,6 +57,12 @@
         />
       </div>
 
+      <div class="forgot-password">
+        <button class="link" on:click={() => dispatch('navigate', { route: 'forgot-password' })}>
+          Forgot password?
+        </button>
+      </div>
+
       <button type="submit" class="full-width" disabled={loading}>
         {loading ? 'Signing in...' : 'Sign In'}
       </button>
@@ -109,6 +115,12 @@
   .full-width {
     width: 100%;
     margin-top: 0.5rem;
+  }
+
+  .forgot-password {
+    text-align: right;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
   }
 
   .switch-auth {

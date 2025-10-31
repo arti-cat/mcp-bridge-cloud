@@ -146,7 +146,7 @@ if (fs.existsSync(dashboardPath)) {
       host: /^(mcp-bridge\.xyz|localhost|127\.0\.0\.1)$/
     }
   });
-}
+}ah
 ```
 
 **Database Schema**: Existing schema was sufficient, no migrations required.
