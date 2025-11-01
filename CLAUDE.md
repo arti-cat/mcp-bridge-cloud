@@ -13,11 +13,15 @@
 - `client/` - WebSocket client library (published as `mcp-bridge-cloud-client`)
 - `dashboard/` - User account management (Svelte + Supabase)
 
-**Server code** is in separate private repo (`mcp-bridge-cloud-server`).
+**Server infrastructure:**
+
+- `server/` directory exists locally but is in `.gitignore` (not pushed to this repo)
+- Server code is tracked in separate private repo: `mcp-bridge-cloud-server`
+- Remote: <https://github.com/arti-cat/mcp-bridge-cloud-server> (private)
 
 ## Architecture
 
-```
+```text
 ChatGPT → https://username.mcp-bridge.xyz
     ↓ (HTTPS)
 Cloud Server (Fly.io - private repo)
@@ -35,7 +39,7 @@ MCP Server
 
 ### `cli/` - Command Line Interface
 
-```
+```text
 bin/mcp-bridge-cloud.js    # Entry point, arg parsing, user messages
 lib/adapter.js              # HTTP-to-STDIO adapter (Fastify server)
 ```
@@ -48,7 +52,7 @@ lib/adapter.js              # HTTP-to-STDIO adapter (Fastify server)
 
 ### `client/` - WebSocket Client Library
 
-```
+```text
 lib/cloud-connector.js      # Main WebSocket client class
 test-connection.js          # Test script
 ```
@@ -76,7 +80,7 @@ client.disconnect();
 
 ### `dashboard/` - User Dashboard
 
-```
+```text
 src/App.svelte              # Main app component
 src/lib/supabaseClient.js   # Auth + DB client
 public/                     # Static assets
@@ -121,7 +125,8 @@ MCP_API_KEY=your_key node test-connection.js
 ```
 
 Expected:
-```
+
+```text
 ✅ CONNECTED!
 URL: https://yourname.mcp-bridge.xyz
 ```

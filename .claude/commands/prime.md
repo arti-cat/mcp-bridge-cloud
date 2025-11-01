@@ -18,9 +18,10 @@ This is the **public repository** for mcp-bridge.xyz - a persistent tunnel servi
 - `client/` - WebSocket client library (npm: mcp-bridge-cloud-client)
 - `dashboard/` - User account management (Svelte)
 
-**What it does NOT contain:**
+**Server infrastructure:**
 
-- Server infrastructure (separate private repository)
+- `server/` - Exists locally but in `.gitignore` (not tracked in this repo)
+- Tracked in separate private repo: <https://github.com/arti-cat/mcp-bridge-cloud-server>
 
 ## Context Gathering
 
@@ -33,6 +34,7 @@ Key directories to understand:
 - `cli/bin/` and `cli/lib/` - CLI implementation
 - `client/lib/` - WebSocket client (CloudConnector)
 - `dashboard/src/` - User dashboard UI
+- `server/src/` - Server infrastructure (if exists locally, private repo)
 
 ### 2. Current State
 
@@ -58,9 +60,9 @@ After gathering context, provide a concise summary covering:
 
 ### Architecture
 
-- Request flow: ChatGPT → Cloud → WebSocket → CLI → Local MCP Server
+- Request flow: ChatGPT → Cloud Server → WebSocket → CLI → Local MCP Server
 - Three main components: CLI, Client Library, Dashboard
-- Server is separate (private repo)
+- Server infrastructure: Exists locally in `server/` but tracked in private repo
 
 ### Key Files & Responsibilities
 
