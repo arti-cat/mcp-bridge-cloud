@@ -103,7 +103,8 @@ export async function routeRequest(req, reply) {
     }
 
     // Add correct Host header for local adapter
-    filteredHeaders.host = 'localhost:3000';
+    // Configurable via LOCAL_ADAPTER_HOST env variable (default: localhost:3000)
+    filteredHeaders.host = process.env.LOCAL_ADAPTER_HOST || 'localhost:3000';
 
     // Forward request through tunnel
     const response = await forwardHttpRequest(subdomain, {
