@@ -1,319 +1,167 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Resources
-
-Claude code toolkit: '.claude/claude-code-toolkit/'
-
-This is a meta-toolkit that allows you to create tools for Claude Code, i.e, you.
-
-You should use the toolkit PROACTIVELY when you need it, not passively waiting for me to ask you to use it. It contains a decision tree that will guide you through the process of creating a Claude Code extension or tool.
-
-- `CLAUDE.md` - This file
-- '.claude/claude-code-toolkit/' - The Claude Code Toolkit
-- '.claude/claude-code-toolkit/README.md'
-- '.claude/claude-code-toolkit/INDEX.md'
-  
 ## Project Overview
 
-MCP Bridge Cloud is a WebSocket-based tunnel relay service that provides persistent HTTPS URLs for mcp-bridge users. The system routes HTTP requests from ChatGPT through WebSocket connections to users' local MCP adapters.
+**MCP Bridge Cloud** - Public repository for mcp-bridge.xyz persistent tunnel service.
 
-**Core Problem**: Cloudflare temporary tunnels change URLs on every restart, requiring users to constantly update ChatGPT configurations.
+**Problem**: Cloudflare temp tunnels change URLs on restart → users must reconfigure ChatGPT constantly.
+**Solution**: Persistent subdomains (e.g., `https://username.mcp-bridge.xyz`) via WebSocket relay.
 
-**Solution**: Permanent subdomains (e.g., `https://username.mcp-bridge.xyz`) that persist across restarts.
+**This repo contains:**
+
+- `cli/` - Command-line tool (published as `mcp-bridge-cloud`)
+- `client/` - WebSocket client library (published as `mcp-bridge-cloud-client`)
+- `dashboard/` - User account management (Svelte + Supabase)
+
+**Server code** is in separate private repo (`mcp-bridge-cloud-server`).
 
 ## Architecture
 
-The system has three main components:
-
-1. **Cloud Server** (`server/`): Node.js/Fastify server on Fly.io that accepts WebSocket tunnel connections and routes HTTP traffic
-2. **Client Connector** (`client/`): WebSocket client that connects local mcp-bridge to the cloud server
-3. **Infrastructure**: Caddy for reverse proxy/SSL, Supabase for database/auth
-
-### Request Flow
-
 ```
 ChatGPT → https://username.mcp-bridge.xyz
-    ↓
-Caddy (reverse proxy, wildcard SSL)
-    ↓
-Fastify Server (routing.js extracts subdomain)
-    ↓
-Tunnel Relay (tunnel-relay.js routes by subdomain → WebSocket)
-    ↓
-User's Local Machine (cloud-connector.js receives via WebSocket)
-    ↓
-Local HTTP Adapter (:3000)
-    ↓
-MCP Server (STDIO)
+    ↓ (HTTPS)
+Cloud Server (Fly.io - private repo)
+    ↓ (WebSocket)
+CLI Tool (user's machine - this repo)
+    ↓ (HTTP localhost:3000)
+Local HTTP Adapter
+    ↓ (STDIO)
+MCP Server
 ```
 
-## Development Commands
+**Flow**: Cloud server routes by subdomain → WebSocket tunnel → Local CLI → HTTP adapter → MCP server.
 
-### Server Development
+## Code Structure
+
+### `cli/` - Command Line Interface
+
+```
+bin/mcp-bridge-cloud.js    # Entry point, arg parsing, user messages
+lib/adapter.js              # HTTP-to-STDIO adapter (Fastify server)
+```
+
+**Key patterns:**
+
+- Uses `mcp-bridge-cloud-client` package for WebSocket connection
+- Spawns local Fastify server on port 3000 (configurable)
+- Converts HTTP requests → JSON-RPC → STDIO
+
+### `client/` - WebSocket Client Library
+
+```
+lib/cloud-connector.js      # Main WebSocket client class
+test-connection.js          # Test script
+```
+
+**CloudConnector API:**
+
+```javascript
+const client = new CloudConnector({
+  apiKey: '...',           // 64-char hex string
+  tunnelUrl: 'wss://...',  // WebSocket URL
+  localPort: 3000,         // Where adapter listens
+  debug: false             // Verbose logging
+});
+
+await client.connect();    // Returns { url, subdomain }
+client.disconnect();
+```
+
+**Key patterns:**
+
+- Auto-reconnect with exponential backoff (1s → 32s max)
+- Request/response correlation via unique requestId
+- Event-driven (EventEmitter for tunnel events)
+- 30s timeout per request
+
+### `dashboard/` - User Dashboard
+
+```
+src/App.svelte              # Main app component
+src/lib/supabaseClient.js   # Auth + DB client
+public/                     # Static assets
+```
+
+**Tech**: Svelte + Vite + Supabase + Tailwind CSS
+
+## Development
+
+### CLI
 
 ```bash
-# Install dependencies
-cd server
+cd cli
 npm install
-
-# Development mode (auto-restart on changes)
-npm run dev
-
-# Production mode
-npm start
-
-# Run MCP Inspector (for testing/debugging MCP servers)
-npm run inspector
+node bin/mcp-bridge-cloud.js --help
+npm link  # For global testing
 ```
 
-### Client Testing
+### Client Library
 
 ```bash
-# Install dependencies
 cd client
 npm install
-
-# Test connection (requires running server)
-node -e "
-const { CloudConnector } = require('./lib/cloud-connector.js');
-const client = new CloudConnector({
-  apiKey: 'test_api_key_123',
-  tunnelUrl: 'ws://localhost:8080',
-  localPort: 3000,
-  debug: true
-});
-client.connect().then(r => console.log('Connected:', r));
-"
+node test-connection.js  # Requires MCP_API_KEY env var
 ```
 
-### Environment Setup
+### Dashboard
 
-Create `server/.env`:
 ```bash
-SUPABASE_URL=https://xxxxx.supabase.co
-SUPABASE_ANON_KEY=eyJxxx...
-SUPABASE_SERVICE_KEY=eyJxxx...
-PORT=8080
-NODE_ENV=development
-
-# Optional: Configure local adapter host (default: localhost:3000)
-# LOCAL_ADAPTER_HOST=localhost:3000
+cd dashboard
+npm install
+npm run dev
 ```
-
-For local testing without Supabase, you can mock the database functions in `server/src/db.js`.
-
-### Optional Environment Variables
-
-- **`LOCAL_ADAPTER_HOST`** - Host header sent to local HTTP adapter (default: `localhost:3000`)
-  - Change this if your adapter runs on a non-standard port
-  - Example: `LOCAL_ADAPTER_HOST=localhost:8080`
-  - This configures what Host header is forwarded through the WebSocket relay to the local adapter
-
-## Key Files and Their Responsibilities
-
-### Server (`server/src/`)
-
-- **`index.js`**: Main entry point. Sets up Fastify server, registers routes, initializes WebSocket server
-- **`tunnel-relay.js`**: WebSocket server that manages tunnel connections. Maps subdomains to WebSocket connections, handles bidirectional communication
-- **`routing.js`**: HTTP routing logic. Extracts subdomains, validates users, forwards requests to appropriate tunnels
-- **`db.js`**: Supabase client wrapper. User lookup by API key/subdomain, tunnel status tracking, request counting
-
-### Client (`client/lib/`)
-
-- **`cloud-connector.js`**: WebSocket client that connects to cloud server, receives HTTP requests via WebSocket, forwards to local adapter, sends responses back
-
-### Configuration
-
-- **`fly.toml`**: Fly.io deployment config (regions, health checks, scaling)
-- **`Caddyfile`**: Reverse proxy config for wildcard SSL (`*.mcp-bridge.xyz`)
-- **`Dockerfile`**: Container build for deployment
-- **`docker-compose.yml`**: Local development environment
-
-## Important Implementation Details
-
-### Subdomain Extraction
-The system extracts subdomains from the `Host` header (e.g., `username.mcp-bridge.xyz` → `username`). For local testing, set `TEST_SUBDOMAIN` env var or use `Host` header injection.
-
-### WebSocket Connection Management
-- **One connection per subdomain**: New connections from same user close existing ones (see `tunnel-relay.js:50-54`)
-- **Heartbeat mechanism**: Server pings every 30s, terminates inactive connections (see `tunnel-relay.js:110-120`)
-- **Auto-reconnect**: Client reconnects with exponential backoff (1s → 32s max) on disconnect (see `cloud-connector.js:189-206`)
-
-### Request/Response Correlation
-Each HTTP request gets a unique `requestId` (format: `req_{timestamp}_{random}`). Pending requests are stored in a Map with 30s timeout. This allows async request/response matching over WebSocket.
-
-### Database Schema
-Two main tables in Supabase:
-- **`users`**: email, username, subdomain, api_key (all unique)
-- **`tunnels`**: tracks connection status, last_seen timestamp, requests_count
-
-The `increment_tunnel_requests` PostgreSQL function atomically increments request counts.
 
 ## Testing
 
-### Manual Testing Flow
-
-1. **Start server**:
-   ```bash
-   cd server && npm run dev
-   ```
-
-2. **Create test user** (via Supabase SQL Editor):
-   ```sql
-   INSERT INTO users (email, username, subdomain, api_key)
-   VALUES ('test@example.com', 'testuser', 'testuser', 'test_api_key_123');
-   ```
-
-3. **Start a local HTTP server** on port 3000 (simulates mcp-bridge adapter):
-   ```bash
-   python -m http.server 3000
-   ```
-
-4. **Connect client**:
-   ```bash
-   cd client
-   node lib/cloud-connector.js  # (modify to set apiKey and debug mode)
-   ```
-
-5. **Send test request**:
-   ```bash
-   curl -X POST http://localhost:8080 \
-     -H "Host: testuser.mcp-bridge.xyz" \
-     -H "Content-Type: application/json" \
-     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
-   ```
-
-### Health Check
+**Quick test** (requires valid API key):
 
 ```bash
-curl http://localhost:8080/healthz
-# Returns: {"status":"ok","timestamp":"...","service":"mcp-bridge-cloud"}
+cd client
+MCP_API_KEY=your_key node test-connection.js
 ```
 
-### Tunnel Status
+Expected:
+```
+✅ CONNECTED!
+URL: https://yourname.mcp-bridge.xyz
+```
 
+**Verify tunnel status:**
 ```bash
-curl http://localhost:8080/api/status/testuser
-# Returns connection status for subdomain "testuser"
+curl https://mcp-bridge.xyz/api/status/yourname
+# Should show: "status": "connected"
 ```
 
-## Deployment
+## Code Conventions
 
-### Fly.io Deployment
+- **ES Modules**: All code uses `import/export` (type: "module")
+- **Node.js 18+**: Required for all packages
+- **Error handling**: Try/catch with descriptive messages, log errors to console
+- **Async/await**: Preferred over promises/callbacks
+- **WebSocket messages**: JSON format with `type`, `requestId`, `data` fields
+- **Environment variables**: Uppercase with prefixes (MCP_*, VITE_*)
 
-```bash
-# Install Fly CLI
-curl -L https://fly.io/install.sh | sh
+## Key Implementation Details
 
-# Login
-flyctl auth login
+**WebSocket Protocol:**
 
-# Set secrets (NEVER commit these)
-flyctl secrets set \
-  SUPABASE_URL="https://xxx.supabase.co" \
-  SUPABASE_SERVICE_KEY="eyJxxx..." \
-  SUPABASE_ANON_KEY="eyJxxx..."
+- Client → Server: `{ type: 'auth', apiKey: '...' }`
+- Server → Client: `{ type: 'http-request', requestId: '...', data: {...} }`
+- Client → Server: `{ type: 'http-response', requestId: '...', data: {...} }`
 
-# Deploy
-flyctl deploy
+**Connection Management:**
 
-# View logs
-flyctl logs
+- One WebSocket per subdomain (new connection closes existing)
+- Heartbeat every 30s (pong required or connection terminated)
+- Auto-reconnect on disconnect
 
-# Check status
-flyctl status
-```
+**Request Timeout:**
 
-### DNS Configuration
+- 30s timeout for pending requests
+- Map-based correlation (requestId → pending request)
+- Cleanup on timeout or response
 
-Point wildcard domain to Fly.io IP:
-```
-A record:    *.mcp-bridge.xyz → [Fly.io IPv4]
-AAAA record: *.mcp-bridge.xyz → [Fly.io IPv6]
-```
+## Related Repos
 
-Caddy handles automatic SSL via Cloudflare DNS challenge.
-
-## Common Development Tasks
-
-### Adding New Endpoints
-
-Add to `server/src/index.js`:
-```javascript
-app.get('/your-route', async (req, reply) => {
-  // handler
-});
-```
-
-### Modifying WebSocket Protocol
-
-Update both:
-- `server/src/tunnel-relay.js`: Server-side message handling
-- `client/lib/cloud-connector.js`: Client-side message handling
-
-Ensure message types are symmetric.
-
-### Debugging WebSocket Issues
-
-Enable debug logging:
-```javascript
-// Client side
-const client = new CloudConnector({ debug: true, ... });
-
-// Server side (already enabled in dev mode via Fastify logger)
-```
-
-### Database Migrations
-
-Run SQL in Supabase SQL Editor. The schema is defined in `server/src/db.js` (see `SCHEMA_SQL` constant).
-
-## Integration with mcp-bridge
-
-The client library (`client/lib/cloud-connector.js`) is designed to be copied into the mcp-bridge CLI package. See `INTEGRATION.md` for detailed integration steps.
-
-Key integration points:
-1. Add `--cloud` and `--api-key` CLI flags
-2. Instantiate `CloudConnector` instead of starting Cloudflare tunnel
-3. Display persistent URL to user
-4. Handle cleanup on shutdown
-
-## Security Considerations
-
-- **API keys**: 64-character random strings, stored in Supabase `users.api_key`
-- **Row Level Security**: Enabled on `users` table (users can only see their own data)
-- **HTTPS only**: All production traffic over TLS (Caddy auto-SSL)
-- **WebSocket authentication**: API key validated on connection, invalid keys rejected with 1008 close code
-- **Rate limiting**: Not yet implemented (TODO for production)
-
-## Troubleshooting
-
-### "Tunnel not connected" error
-- Verify client is running with correct API key
-- Check server logs for connection attempts
-- Ensure WebSocket isn't blocked by firewall
-
-### "Invalid subdomain" error
-- Check `Host` header is set correctly
-- For local testing, set `TEST_SUBDOMAIN` environment variable
-
-### Request timeout (30s)
-- Local adapter may be slow or unresponsive
-- Check local adapter is running on correct port
-- Review `REQUEST_TIMEOUT` constant in `tunnel-relay.js`
-
-### Database connection errors
-- Verify `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set
-- Check Supabase project is running
-- Confirm schema has been created (run `SCHEMA_SQL` from `db.js`)
-
-## Tech Stack
-
-- **Runtime**: Node.js 18+
-- **Web Framework**: Fastify 5.x
-- **WebSocket**: ws 8.x
-- **Database**: Supabase (PostgreSQL + auth)
-- **Reverse Proxy**: Caddy 2.10+ with Cloudflare DNS module
-- **Deployment**: Fly.io
-- **DNS**: Cloudflare
+- **mcp-bridge-cloud** (this repo): Public - CLI, client, dashboard
+- **mcp-bridge-cloud-server**: Private - Server infrastructure
