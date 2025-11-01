@@ -84,9 +84,19 @@ SUPABASE_ANON_KEY=eyJxxx...
 SUPABASE_SERVICE_KEY=eyJxxx...
 PORT=8080
 NODE_ENV=development
+
+# Optional: Configure local adapter host (default: localhost:3000)
+# LOCAL_ADAPTER_HOST=localhost:3000
 ```
 
 For local testing without Supabase, you can mock the database functions in `server/src/db.js`.
+
+### Optional Environment Variables
+
+- **`LOCAL_ADAPTER_HOST`** - Host header sent to local HTTP adapter (default: `localhost:3000`)
+  - Change this if your adapter runs on a non-standard port
+  - Example: `LOCAL_ADAPTER_HOST=localhost:8080`
+  - This configures what Host header is forwarded through the WebSocket relay to the local adapter
 
 ## Key Files and Their Responsibilities
 
