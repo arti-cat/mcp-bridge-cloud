@@ -51,8 +51,9 @@ Key directories to understand:
 
 ### 5. Package Information
 
-!`cat cli/package.json | grep -E '(name|version|description)' | head -5`
-!`cat client/package.json | grep -E '(name|version|description)' | head -5`
+Check published packages:
+@cli/package.json - CLI tool metadata
+@client/package.json - Client library metadata
 
 ## Understanding to Synthesize
 
