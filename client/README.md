@@ -43,16 +43,16 @@ console.log('Persistent URL:', result.url);
 // → https://yourusername.mcp-bridge.xyz
 ```
 
-## Usage with MCP Bridge CLI
+## Usage with MCP Bridge Cloud CLI
 
-This package is designed to work with the [mcp-bridge](https://github.com/arti-cat/mcp-bridge) CLI:
+This package is designed to work with the mcp-bridge-cloud CLI:
 
 ```bash
-# Install mcp-bridge CLI
-npm install -g mcp-bridge
+# Install mcp-bridge-cloud CLI (coming soon)
+npm install -g mcp-bridge-cloud
 
 # Run with cloud mode
-mcp-bridge --cloud --api-key your-api-key
+mcp-bridge-cloud --api-key your-api-key
 ```
 
 The CLI automatically:

@@ -185,12 +185,12 @@ flyctl deploy
 
 ### For Users
 ```bash
-# Install mcp-bridge with cloud support
-npm install -g mcp-bridge
+# Install mcp-bridge-cloud CLI (coming soon)
+npm install -g mcp-bridge-cloud
 
 # Sign up for cloud account (get API key)
 # Run with cloud mode
-mcp-bridge --cloud --api-key YOUR_API_KEY
+mcp-bridge-cloud --api-key YOUR_API_KEY
 
 # Output:
 # ✓ Connected to cloud
