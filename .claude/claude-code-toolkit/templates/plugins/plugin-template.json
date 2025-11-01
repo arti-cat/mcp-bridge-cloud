@@ -1,0 +1,24 @@
+{
+  "name": "my-plugin-name",
+  "version": "1.0.0",
+  "description": "Brief description of what this plugin does",
+  "author": {
+    "name": "Your Name",
+    "email": "email@example.com",
+    "url": "https://example.com"
+  },
+  "homepage": "https://github.com/username/plugin-name",
+  "repository": "https://github.com/username/plugin-name",
+  "license": "MIT",
+  "keywords": ["claude-code", "plugin", "keyword1", "keyword2"],
+  "commands": "./commands",
+  "agents": ["./agents/agent1.md", "./agents/agent2.md"],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": {
+    "server-name": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/server",
+      "args": [],
+      "env": {}
+    }
+  }
+}
