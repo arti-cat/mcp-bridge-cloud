@@ -1,20 +1,44 @@
 {
   "name": "mcp-bridge-cloud-client",
   "version": "0.1.0",
-  "description": "WebSocket client for connecting mcp-bridge to cloud tunnel service",
+  "description": "WebSocket client for connecting local MCP servers to persistent cloud tunnels via mcp-bridge.xyz",
   "main": "lib/cloud-connector.js",
   "type": "module",
+  "files": [
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "prepublishOnly": "echo 'Publishing mcp-bridge-cloud-client v${npm_package_version}'"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arti-cat/mcp-bridge-cloud.git",
+    "directory": "client"
+  },
+  "bugs": {
+    "url": "https://github.com/arti-cat/mcp-bridge-cloud/issues"
+  },
+  "homepage": "https://mcp-bridge.xyz",
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "tunnel",
     "websocket",
-    "client"
+    "client",
+    "persistent-url",
+    "mcp-bridge",
+    "chatgpt",
+    "cloud-tunnel",
+    "reverse-proxy"
   ],
   "author": "articat <articat1066@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "ws": "^8.16.0"
   }
