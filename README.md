@@ -185,7 +185,7 @@ flyctl deploy
 
 ### For Users
 ```bash
-# Install mcp-bridge-cloud CLI (coming soon)
+# Install mcp-bridge-cloud CLI
 npm install -g mcp-bridge-cloud
 
 # Sign up for cloud account (get API key)

@@ -48,7 +48,7 @@ console.log('Persistent URL:', result.url);
 This package is designed to work with the mcp-bridge-cloud CLI:
 
 ```bash
-# Install mcp-bridge-cloud CLI (coming soon)
+# Install mcp-bridge-cloud CLI
 npm install -g mcp-bridge-cloud
 
 # Run with cloud mode

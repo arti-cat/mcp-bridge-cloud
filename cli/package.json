@@ -1,0 +1,52 @@
+{
+  "name": "mcp-bridge-cloud",
+  "version": "0.1.0",
+  "description": "Persistent cloud tunnels for MCP servers - CLI tool for connecting local MCP servers to mcp-bridge.xyz",
+  "main": "bin/mcp-bridge-cloud.js",
+  "type": "module",
+  "bin": {
+    "mcp-bridge-cloud": "bin/mcp-bridge-cloud.js",
+    "mcp-cloud": "bin/mcp-bridge-cloud.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "echo \"Tests coming soon\" && exit 0",
+    "prepublishOnly": "echo 'Publishing mcp-bridge-cloud v${npm_package_version}'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arti-cat/mcp-bridge-cloud.git",
+    "directory": "cli"
+  },
+  "bugs": {
+    "url": "https://github.com/arti-cat/mcp-bridge-cloud/issues"
+  },
+  "homepage": "https://mcp-bridge.xyz",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "tunnel",
+    "persistent-url",
+    "mcp-bridge",
+    "chatgpt",
+    "cloud-tunnel",
+    "cli",
+    "websocket",
+    "reverse-proxy"
+  ],
+  "author": "articat <articat1066@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "mcp-bridge-cloud-client": "^0.1.1",
+    "fastify": "^5.0.0",
+    "kill-port": "^2.0.1"
+  }
+}
