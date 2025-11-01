@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Resources
+
+Claude code toolkit: '.claude/claude-code-toolkit/'
+
+This is a meta-toolkit that allows you to create tools for Claude Code, i.e, you.
+
+You should use the toolkit PROACTIVELY when you need it, not passively waiting for me to ask you to use it. It contains a decision tree that will guide you through the process of creating a Claude Code extension or tool.
+
+- `CLAUDE.md` - This file
+- '.claude/claude-code-toolkit/' - The Claude Code Toolkit
+- '.claude/claude-code-toolkit/README.md'
+- '.claude/claude-code-toolkit/INDEX.md'
+  
 ## Project Overview
 
 MCP Bridge Cloud is a WebSocket-based tunnel relay service that provides persistent HTTPS URLs for mcp-bridge users. The system routes HTTP requests from ChatGPT through WebSocket connections to users' local MCP adapters.

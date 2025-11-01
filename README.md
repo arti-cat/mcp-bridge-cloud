@@ -1,5 +1,8 @@
 # MCP Bridge Cloud
 
+[![npm version](https://img.shields.io/npm/v/mcp-bridge-cloud-client.svg)](https://www.npmjs.com/package/mcp-bridge-cloud-client)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **Persistent HTTPS tunnels for MCP Bridge users.**
 
 Users get a permanent URL like `https://username.mcp-bridge.xyz` that routes to their local MCP adapter.
