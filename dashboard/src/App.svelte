@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { supabase, onAuthStateChange } from './lib/supabaseClient.js';
+  import Home from './routes/Home.svelte';
   import Login from './routes/Login.svelte';
   import Signup from './routes/Signup.svelte';
   import Dashboard from './routes/Dashboard.svelte';
@@ -8,7 +9,7 @@
   import ResetPassword from './routes/ResetPassword.svelte';
 
   let session = null;
-  let currentRoute = 'login';
+  let currentRoute = 'home';
   let loading = true;
 
   // Check for hash-based routes and password reset tokens
@@ -22,10 +23,17 @@
       return;
     }
 
-    if (hash.includes('#/reset-password')) {
+    // Route based on hash
+    if (hash.includes('#/login')) {
+      currentRoute = 'login';
+    } else if (hash.includes('#/signup')) {
+      currentRoute = 'signup';
+    } else if (hash.includes('#/reset-password')) {
       currentRoute = 'reset-password';
     } else if (hash.includes('#/forgot-password')) {
       currentRoute = 'forgot-password';
+    } else if (hash === '' || hash === '#' || hash === '#/') {
+      currentRoute = 'home';
     }
   }
 
@@ -43,7 +51,7 @@
     const { data: authListener } = onAuthStateChange((event, newSession) => {
       session = newSession;
       if (event === 'SIGNED_OUT') {
-        currentRoute = 'login';
+        currentRoute = 'home';
         window.location.hash = '';
       }
     });
@@ -61,16 +69,20 @@
   });
 
   function navigate(event) {
-    const route = event.detail?.route || 'signup';
+    const route = event.detail?.route || 'home';
     currentRoute = route;
 
-    // Update hash for password reset routes
-    if (route === 'forgot-password') {
+    // Update hash for all routes
+    if (route === 'home') {
+      window.location.hash = '';
+    } else if (route === 'login') {
+      window.location.hash = '#/login';
+    } else if (route === 'signup') {
+      window.location.hash = '#/signup';
+    } else if (route === 'forgot-password') {
       window.location.hash = '#/forgot-password';
     } else if (route === 'reset-password') {
       window.location.hash = '#/reset-password';
-    } else {
-      window.location.hash = '';
     }
   }
 </script>
@@ -83,7 +95,9 @@
 {:else if session && currentRoute !== 'reset-password'}
   <Dashboard />
 {:else}
-  {#if currentRoute === 'login'}
+  {#if currentRoute === 'home'}
+    <Home on:navigate={navigate} />
+  {:else if currentRoute === 'login'}
     <Login on:navigate={navigate} />
   {:else if currentRoute === 'signup'}
     <Signup on:navigate={() => navigate({ detail: { route: 'login' }})} />

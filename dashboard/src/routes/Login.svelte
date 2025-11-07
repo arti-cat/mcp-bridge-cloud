@@ -25,6 +25,12 @@
 
 <div class="auth-container">
   <div class="auth-card card">
+    <div class="back-link">
+      <button class="link" on:click={() => dispatch('navigate', { route: 'home' })}>
+        ← Back to Home
+      </button>
+    </div>
+
     <h1>MCP Bridge Cloud</h1>
     <p class="subtitle">Sign in to your account</p>
 
@@ -70,7 +76,7 @@
 
     <p class="switch-auth">
       Don't have an account?
-      <button class="link" on:click={() => dispatch('navigate')}>Sign up</button>
+      <button class="link" on:click={() => dispatch('navigate', { route: 'signup' })}>Sign up</button>
     </p>
   </div>
 </div>
@@ -87,6 +93,10 @@
   .auth-card {
     width: 100%;
     max-width: 420px;
+  }
+
+  .back-link {
+    margin-bottom: 1rem;
   }
 
   h1 {
