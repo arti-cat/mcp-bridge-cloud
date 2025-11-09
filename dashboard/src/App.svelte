@@ -7,6 +7,7 @@
   import Dashboard from './routes/Dashboard.svelte';
   import ForgotPassword from './routes/ForgotPassword.svelte';
   import ResetPassword from './routes/ResetPassword.svelte';
+  import AuthConfirm from './routes/AuthConfirm.svelte';
 
   let session = null;
   let currentRoute = 'home';
@@ -15,6 +16,13 @@
   // Check for hash-based routes and password reset tokens
   function checkHashRoute() {
     const hash = window.location.hash;
+    const search = window.location.search;
+
+    // Check for email confirmation from Supabase (query params: ?token_hash=...&type=email)
+    if (search.includes('token_hash') && search.includes('type=email')) {
+      currentRoute = 'auth-confirm';
+      return;
+    }
 
     // Check if this is a password reset from Supabase email link
     // Supabase adds #access_token=... or type=recovery in the URL
@@ -32,6 +40,8 @@
       currentRoute = 'reset-password';
     } else if (hash.includes('#/forgot-password')) {
       currentRoute = 'forgot-password';
+    } else if (hash.includes('#/auth/confirm')) {
+      currentRoute = 'auth-confirm';
     } else if (hash === '' || hash === '#' || hash === '#/') {
       currentRoute = 'home';
     }
@@ -83,6 +93,9 @@
       window.location.hash = '#/forgot-password';
     } else if (route === 'reset-password') {
       window.location.hash = '#/reset-password';
+    } else if (route === 'dashboard') {
+      // Clear any query params and go to dashboard (requires session)
+      window.location.href = window.location.pathname;
     }
   }
 </script>
@@ -92,7 +105,7 @@
     <div class="loading"></div>
     <p>Loading...</p>
   </div>
-{:else if session && currentRoute !== 'reset-password'}
+{:else if session && currentRoute !== 'reset-password' && currentRoute !== 'auth-confirm'}
   <Dashboard />
 {:else}
   {#if currentRoute === 'home'}
@@ -105,6 +118,8 @@
     <ForgotPassword on:navigate={() => navigate({ detail: { route: 'login' }})} />
   {:else if currentRoute === 'reset-password'}
     <ResetPassword on:complete={() => navigate({ detail: { route: 'login' }})} />
+  {:else if currentRoute === 'auth-confirm'}
+    <AuthConfirm on:navigate={navigate} />
   {/if}
 {/if}
 

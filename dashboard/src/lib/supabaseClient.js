@@ -33,11 +33,15 @@ export async function getUser() {
  * Sign up new user
  */
 export async function signUp(email, password, metadata = {}) {
+  // Use environment variable for redirect URL, fallback to current origin
+  const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: metadata,
+      emailRedirectTo: `${appUrl}/auth/confirm`,
     },
   });
   return { data, error };
